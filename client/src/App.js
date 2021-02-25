@@ -1,25 +1,35 @@
-import logo from './logo.svg';
 import './App.css';
+import Navbar from './components/Navbar';
+import { BrowserRouter, Route } from 'react-router-dom';
+import Courses from './components/Courses';
+import { ChakraProvider } from '@chakra-ui/react';
+import { AppProvider } from './context';
+import CourseDetail from './components/CourseDetail';
+import Instructors from './components/Instructors';
+import InstructorDetail from './components/InstructorDetail';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+	return (
+		<ChakraProvider>
+			<AppProvider>
+				<BrowserRouter>
+					<Navbar />
+					<Route exact path='/'>
+						<Courses />
+					</Route>
+					<Route exact path='/profesores'>
+						<Instructors />
+					</Route>
+					<Route exact path='/curso/:id'>
+						<CourseDetail />
+					</Route>
+					<Route exact path='/profesores/:id'>
+						<InstructorDetail />
+					</Route>
+				</BrowserRouter>
+			</AppProvider>
+		</ChakraProvider>
+	);
 }
 
 export default App;
