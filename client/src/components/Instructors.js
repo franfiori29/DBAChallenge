@@ -25,7 +25,7 @@ function Instructors() {
 		);
 
 	return (
-		<div style={{ width: '40%', margin: 'auto' }}>
+		<div style={{ width: '60%', margin: 'auto' }}>
 			<Flex justifyContent='flex-end'>
 				<Button
 					colorScheme='teal'

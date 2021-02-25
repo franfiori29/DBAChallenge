@@ -68,7 +68,7 @@ function CourseDetail() {
 						prev.map((c) => (c.id === cohort.id ? res.data : c))
 					);
 					toast({
-						title: 'Profesor quitado',
+						title: 'Profesor asignado',
 						status: 'success',
 						duration: 4000,
 						isClosable: true,
@@ -118,6 +118,7 @@ function CourseDetail() {
 											name='instructorId'
 											onChange={(e) => handleChange(e, cohort)}
 										>
+											<option value={null}></option>
 											{instructors.map((inst) => (
 												<option
 													key={inst.id}
@@ -139,10 +140,12 @@ function CourseDetail() {
 										</Button>
 									) : (
 										<Button
-											colorScheme='teal'
-											onClick={() => setInstructor(cohort.id)}
+											colorScheme={instructor ? 'red' : 'teal'}
+											onClick={() =>
+												setInstructor((prev) => (prev ? '' : cohort.id))
+											}
 										>
-											Asignar profesor
+											{instructor ? 'Cancelar' : 'Asignar profesor'}
 										</Button>
 									)}
 								</Td>

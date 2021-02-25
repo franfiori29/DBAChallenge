@@ -46,7 +46,7 @@ function InstructorDetail() {
 		);
 
 	return (
-		<div style={{ width: '40%', margin: 'auto' }}>
+		<div style={{ width: '60%', margin: 'auto' }}>
 			<Flex>
 				<Text fontSize='lg' fontWeight='600'>
 					{instructors.find((i) => i.id === +id).lastName}
