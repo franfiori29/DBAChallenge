@@ -27,7 +27,12 @@ function Instructors() {
 	return (
 		<div style={{ width: '40%', margin: 'auto' }}>
 			<Flex justifyContent='flex-end'>
-				<Button colorScheme='teal'>Añadir Profesor</Button>
+				<Button
+					colorScheme='teal'
+					onClick={() => history.push('/add/profesor')}
+				>
+					Añadir Profesor
+				</Button>
 			</Flex>
 			<Table variant='striped' size='md'>
 				<Thead>

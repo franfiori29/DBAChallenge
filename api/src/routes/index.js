@@ -15,43 +15,81 @@ server.get('/courses/:id', async (req, res) => {
 	);
 });
 
-server.post('/courses/:courseId/instructor', async (req, res) => {
-	const { courseId } = req.params;
-	const { startDate, instructor } = req.body;
-	let createdOrFoundInstructor = (
-		await Instructor.findOrCreate({
-			where: { email: instructor.email },
-			defaults: {
-				...instructor,
-			},
-		})
-	)[0];
-	await Course_Instructor.create({
-		startDate,
-		courseId,
-		instructorId: createdOrFoundInstructor.id,
-	});
+server.post('/courses', async (req, res) => {
+	const { name } = req.body;
+	try {
+		res.json(await Course.create({ name }));
+	} catch (err) {
+		res.status(409).json({ error: 'Nombre en uso' });
+	}
 });
 
-server.delete('/courses/:courseId/:instructorId', async (req, res) => {
-	const { courseId, instructorId } = req.params;
-	const { startDate } = req.body;
-	await Course_Instructor.destroy({
-		where: {
-			startDate,
-			courseId,
-			instructorId,
-		},
+server.delete('/courses/:id', async (req, res) => {
+	const { id } = req.params;
+	await Course_Instructor.destroy({ where: { courseId: id } });
+	let deleted = await Course.destroy({
+		where: { id },
 	});
+	res.json(deleted);
+});
+
+server.post('/cohort/', async (req, res) => {
+	const { cohort } = req.body;
+	let created = await Course_Instructor.create({ ...cohort });
+	res.json(created);
+});
+
+server.post('/cohort/:id/:instructorId', async (req, res) => {
+	const { id, instructorId } = req.params;
+	let updated = await Course_Instructor.update(
+		{ instructorId },
+		{ where: { id }, returning: true, include: [Instructor] }
+	);
+	let a = await Course_Instructor.findByPk(id, { include: [Instructor] });
+	res.json(a);
+});
+
+server.delete('/cohort/:id', async (req, res) => {
+	const { id } = req.params;
+
+	let deleted = await Course_Instructor.destroy({ where: { id } });
+
+	res.json(deleted);
+});
+
+server.delete('/cohort/instructor/:id', async (req, res) => {
+	const { id } = req.params;
+
+	let deleted = await Course_Instructor.update(
+		{ instructorId: null },
+		{ where: { id }, returning: true }
+	);
+
+	res.json(deleted[1][0]);
 });
 
 server.get('/instructors', async (_, res) => {
 	res.json(await Instructor.findAll());
 });
 
+server.post('/instructors', async (req, res) => {
+	const { instructor } = req.body;
+	try {
+		let createdInstructor = await Instructor.create({ ...instructor });
+		res.json(createdInstructor);
+	} catch (err) {
+		res.status(409).json({ error: 'Email already exists' });
+	}
+});
+
 server.get('/instructors/:instructorId', async (req, res) => {
 	const { instructorId } = req.params;
-	res.json(await Course_Instructor.findAll({ where: { instructorId } }));
+	res.json(
+		await Course_Instructor.findAll({
+			where: { instructorId },
+			include: [Course, Instructor],
+		})
+	);
 });
 
 module.exports = server;

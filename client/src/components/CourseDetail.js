@@ -1,16 +1,22 @@
 import { Button } from '@chakra-ui/button';
 import { Flex, Heading, Text } from '@chakra-ui/layout';
+import { Select } from '@chakra-ui/select';
 import { Spinner } from '@chakra-ui/spinner';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/table';
+import { useToast } from '@chakra-ui/toast';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import { useAppContext } from '../context';
 
 function CourseDetail() {
 	const [cohorts, setCohorts] = useState([]);
+	const [instructor, setInstructor] = useState('');
+	const { instructors, courses } = useAppContext();
 	const [loading, setLoading] = useState(true);
 	const { id } = useParams();
+	const toast = useToast();
+	const history = useHistory();
 
 	useEffect(() => {
 		axios.get(`http://localhost:4000/courses/${id}`).then((course) => {
@@ -18,7 +24,58 @@ function CourseDetail() {
 			setLoading(false);
 		});
 	}, [id]);
-	console.log(cohorts);
+
+	const deleteCohort = (cohort) => {
+		axios.delete(`http://localhost:4000/cohort/${cohort.id}`).then((res) => {
+			if (res) {
+				setCohorts((prev) => prev.filter((c) => c.id !== cohort.id));
+				toast({
+					title: 'Camada eliminada',
+					status: 'success',
+					duration: 4000,
+					isClosable: true,
+				});
+			}
+		});
+	};
+
+	const removeTeacher = (cohort) => {
+		axios
+			.delete(`http://localhost:4000/cohort/instructor/${cohort.id}/`)
+			.then((res) => {
+				if (res) {
+					setCohorts((prev) =>
+						prev.map((c) => (c.id === cohort.id ? res.data : c))
+					);
+					toast({
+						title: 'Profesor quitado',
+						status: 'success',
+						duration: 4000,
+						isClosable: true,
+					});
+				}
+			});
+	};
+
+	const handleChange = (e, cohort) => {
+		axios
+			.post(`http://localhost:4000/cohort/${cohort.id}/${e.target.value}`)
+			.then((res) => {
+				console.log('res :>> ', res);
+				if (res) {
+					setInstructor('');
+					setCohorts((prev) =>
+						prev.map((c) => (c.id === cohort.id ? res.data : c))
+					);
+					toast({
+						title: 'Profesor quitado',
+						status: 'success',
+						duration: 4000,
+						isClosable: true,
+					});
+				}
+			});
+	};
 
 	if (loading)
 		return (
@@ -28,12 +85,17 @@ function CourseDetail() {
 		);
 
 	return (
-		<div style={{ width: '40%', margin: 'auto' }}>
+		<div style={{ width: '60%', margin: 'auto' }}>
 			<Flex justifyContent='space-between'>
 				<Text fontSize='lg' fontWeight='600'>
-					REACT
+					{courses.find((c) => c.id === +id).name}
 				</Text>
-				<Button colorScheme='teal'>Añadir camada</Button>
+				<Button
+					colorScheme='teal'
+					onClick={() => history.push(`/add/cohort?course=${id}`)}
+				>
+					Añadir camada
+				</Button>
 			</Flex>
 			{cohorts.length > 0 ? (
 				<Table variant='striped' size='md'>
@@ -46,13 +108,51 @@ function CourseDetail() {
 					</Thead>
 					<Tbody>
 						{cohorts.map((cohort) => (
-							<Tr>
+							<Tr key={cohort.id}>
 								<Td>{cohort.startDate}</Td>
 								<Td>
-									{cohort.instructor.firstName} {cohort.instructor.lastName}
+									{cohort.instructor ? (
+										`${cohort.instructor.firstName} ${cohort.instructor.lastName}`
+									) : instructor === cohort.id ? (
+										<Select
+											name='instructorId'
+											onChange={(e) => handleChange(e, cohort)}
+										>
+											{instructors.map((inst) => (
+												<option
+													key={inst.id}
+													value={inst.id}
+												>{`${inst.firstName} ${inst.lastName}`}</option>
+											))}
+										</Select>
+									) : (
+										''
+									)}
+								</Td>
+								<Td>
+									{cohort.instructor ? (
+										<Button
+											colorScheme='red'
+											onClick={() => removeTeacher(cohort)}
+										>
+											Quitar profesor
+										</Button>
+									) : (
+										<Button
+											colorScheme='teal'
+											onClick={() => setInstructor(cohort.id)}
+										>
+											Asignar profesor
+										</Button>
+									)}
 								</Td>
 								<Td textAlign='center'>
-									<Button colorScheme='red'>Eliminar</Button>
+									<Button
+										colorScheme='red'
+										onClick={() => deleteCohort(cohort)}
+									>
+										Eliminar camada
+									</Button>
 								</Td>
 							</Tr>
 						))}
