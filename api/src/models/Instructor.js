@@ -10,4 +10,12 @@ module.exports = (db) =>
 			type: D.STRING,
 			allowNull: false,
 		},
+		email: {
+			type: D.STRING,
+			allowNull: false,
+			unique: true,
+			validate: {
+				isEmail: true,
+			},
+		},
 	});
